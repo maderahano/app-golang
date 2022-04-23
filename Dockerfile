@@ -1,17 +1,15 @@
-FROM golang:1.17-alpine
+FROM golang:1.17 as builder
 
 WORKDIR /app
 
-COPY go.mod ./
-COPY go.sum ./
+COPY . .
 
-RUN go mod download
+RUN go build -tags netgo -o main.app .
 
-COPY . ./
+FROM alpine:latest
 
-RUN go build -o /dist
+WORKDIR /pack
 
-EXPOSE 8080
+COPY --from=builder /app/main.app .
 
-CMD ["/dist"]
-
+CMD [ "/pack/main.app" ]
